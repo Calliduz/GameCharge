@@ -1,0 +1,78 @@
+{
+  "entities": {
+    "Game": {
+      "title": "Game",
+      "description": "A game available for top-up",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the game" },
+        "category": { "type": "string", "description": "Category (e.g., MOBA, Strategy)" },
+        "imageUrl": { "type": "string", "description": "URL to the game's cover image" },
+        "playerFieldLabel": { "type": "string", "description": "Label for the player ID field" },
+        "serverFieldLabel": { "type": "string", "description": "Label for the server ID field (optional)" },
+        "id": { "type": "string", "description": "Unique identifier" }
+      },
+      "required": ["name", "imageUrl", "playerFieldLabel"]
+    },
+    "ProductItem": {
+      "title": "ProductItem",
+      "description": "A specific top-up denomination for a game",
+      "type": "object",
+      "properties": {
+        "gameId": { "type": "string", "description": "ID of the associated game" },
+        "name": { "type": "string", "description": "Name of the denomination (e.g., 100 Diamonds)" },
+        "price": { "type": "number", "description": "Price in local currency" },
+        "value": { "type": "number", "description": "Numerical value of the top-up" }
+      },
+      "required": ["gameId", "name", "price"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "A top-up transaction record",
+      "type": "object",
+      "properties": {
+        "gameId": { "type": "string", "description": "ID of the game" },
+        "productId": { "type": "string", "description": "ID of the product item" },
+        "playerId": { "type": "string", "description": "User's player ID" },
+        "serverId": { "type": "string", "description": "User's server ID (optional)" },
+        "email": { "type": "string", "description": "Email for digital receipt" },
+        "amount": { "type": "number", "description": "Total amount paid" },
+        "status": { "type": "string", "enum": ["pending", "completed", "failed"] },
+        "paymentMethod": { "type": "string", "description": "Payment method used" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["gameId", "productId", "playerId", "amount", "status", "timestamp"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "A user review for a game",
+      "type": "object",
+      "properties": {
+        "gameId": { "type": "string", "description": "ID of the game being reviewed" },
+        "rating": { "type": "number", "description": "Rating from 1 to 5" },
+        "comment": { "type": "string", "description": "User's feedback" },
+        "userName": { "type": "string", "description": "Name of the reviewer" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["gameId", "rating", "userName", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/games/{gameId}": {
+      "schema": "Game",
+      "description": "Collection of games"
+    },
+    "/products/{productId}": {
+      "schema": "ProductItem",
+      "description": "Collection of all product items across all games"
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Collection of transactions"
+    },
+    "/reviews/{reviewId}": {
+      "schema": "Review",
+      "description": "Collection of game reviews"
+    }
+  }
+}

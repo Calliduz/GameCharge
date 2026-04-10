@@ -1,0 +1,66 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isValidGame(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.imageUrl is string && data.imageUrl.size() < 500 &&
+             data.playerFieldLabel is string && data.playerFieldLabel.size() < 50;
+    }
+    
+    function isValidProduct(data) {
+      return data.gameId is string &&
+             data.name is string && data.name.size() > 0 &&
+             data.price is number && data.price >= 0;
+    }
+    
+    function isValidTransaction(data) {
+      return data.gameId is string &&
+             data.productId is string &&
+             data.playerId is string && data.playerId.size() > 0 &&
+             data.amount is number && data.amount >= 0 &&
+             data.status in ['pending', 'completed', 'failed'] &&
+             data.timestamp is string;
+    }
+
+    function isValidReview(data) {
+      return data.gameId is string &&
+             data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+             data.userName is string && data.userName.size() > 0 && data.userName.size() < 50 &&
+             (!('comment' in data) || (data.comment is string && data.comment.size() < 500)) &&
+             data.timestamp is string;
+    }
+
+    // Games: Publicly readable, only admin (mocked as authenticated for now) can write
+    match /games/{gameId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Products: Publicly readable, only admin can write
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Transactions: Public can create (guest checkout). 
+    // Reading is allowed for history search (filtered by playerId or email).
+    match /transactions/{transactionId} {
+      allow create: if isValidTransaction(request.resource.data);
+      allow read: if true; // Allowed for demo purposes to support history search
+      allow update, delete: if false;
+    }
+
+    // Reviews: Publicly readable, anyone can create (for demo)
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isValidReview(request.resource.data);
+      allow update, delete: if false;
+    }
+  }
+}
